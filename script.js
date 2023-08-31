@@ -1,37 +1,39 @@
+var xJOS = 350;
+var yJOS = 350;
+
 function setup() {
-  canvas = createCanvas(900,200);
-  background('lavender');
+  canvas = createCanvas(450,450);
   canvas.parent();
-  noLoop();
+  textFont("Verdana");
+  textSize(14);
 }
 
 function draw() {
+  background('lavender');
+  fill('black');
+  text("mouseX:" + round(mouseX) + " mouseY:" + round(mouseY),10,20);
+  text("xJOS:" + xJOS + " yJOS:" + yJOS,300,20);
+  translate(mouseX,mouseY);
+  
+
+  push();
   noStroke();
-  fill('mediumaquamarine');
-  translate(50,50);
-  rect(0,0,100,100);
-  
-  translate(140,0);
-  rect(0,0,100,100);
-  translate(140,0);
-  rect(0,0,100,100);
-  
-  translate(140,0);
-  // BEGIN aanpassing
-  
-  
-  
-  stroke('cornsilk');
-  strokeWeight(20);
-  fill('teal');
-  translate(0,40);  
-  rect(0,0,100,100);
+  fill('indianred');
+  ellipse(0,0,150);
+  fill('slategray');
+  ellipse(-20,-30,50);
+  ellipse(20,-30,50);
+  fill('white');
+  ellipse(-20,-25,20,40);
+  ellipse(20,-25,20,40);
+  fill('orange');
+  ellipse(0,10,50);
+  stroke('slategray');
+  strokeWeight(10);
+  fill('white');
+  arc(0, 40, 80, 40, 0, PI, CHORD);
   pop();
-  
-  // EINDE aanpassing
-  
-  translate(140,0);
-  rect(0,0,100,100);
-  translate(140,0);
-  rect(0,0,100,100);  
+  // einde tekenen JOS
+  xJOS--;
+  yJOS -= 2;
 }
