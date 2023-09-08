@@ -1,3 +1,4 @@
+
 var aantalRijenRaster = 6;
 var aantalKolommenRaster = 9;
 var celGrootte;
@@ -14,13 +15,37 @@ function preload() {
 function setup() {
   canvas = createCanvas(900,600);
   canvas.parent();
+  frameRate(10);
   celGrootte = width / aantalKolommenRaster;
 }
 
 function draw() {
   background(brug);
   tekenRaster();
+
+  if (keyIsDown(RIGHT_ARROW)) {
+    xJos += celGrootte;
+  }
+  if (keyIsDown(LEFT_ARROW)) {
+    xJos -= celGrootte;
+  }
+  if (keyIsDown(UP_ARROW)) {
+    yJos -= celGrootte;
+  }
+  if (keyIsDown(DOWN_ARROW)) {
+    yJos += celGrootte;
+  }
+  
+  xJos = constrain(xJos,0,width - celGrootte);
+
+  yJos = constrain(yJos,0,height - celGrootte);
+  
   image(spriteJos,xJos,yJos);
+
+  if (xJos == 6*celGrootte && yJos == 4*celGrootte) {
+   spriteJos.resize(50,50);
+   spriteJos.filter(ERODE);
+}
 }
 
 function tekenRaster() {
