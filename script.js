@@ -1,24 +1,36 @@
-var kater,katerKlein,landschap,kever;
-var keverX;
-var keverY;
+var aantalRijenRaster = 6;
+var aantalKolommenRaster = 9;
+var celGrootte;
+
+var spriteJos;
+var xJos = 400;
+var yJos = 300;
 
 function preload() {
-  kater = loadImage("images/brieck.jpg");
-  bomen = loadImage("images/bomen.jpg");
-  kever = loadImage("images/sprites/kever.png");
+  brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
+  spriteJos = loadImage("images/sprites/Jos100px/Jos_0.png");
 }
 
 function setup() {
-  canvas = createCanvas(450,450);
+  canvas = createCanvas(900,600);
   canvas.parent();
-  keverX = 150;
-  keverY = 100;
+  celGrootte = width / aantalKolommenRaster;
 }
 
 function draw() {
-  background('grey');  
-  image(kater,25,25,400,400);
-  keverX+=random(-5,5);
-  keverY+=random(-5,5);
-  image(kever,keverX,keverY,30,30);
+  background(brug);
+  tekenRaster();
+  image(spriteJos,xJos,yJos);
+}
+
+function tekenRaster() {
+  push();
+  noFill();
+  stroke('grey');
+  for (var rij = 0;rij < aantalRijenRaster;rij++) {
+    for (var kolom = 0;kolom < aantalKolommenRaster;kolom++) {
+      rect(kolom*celGrootte,rij*celGrootte,celGrootte,celGrootte);
+    }
+  }
+  pop();
 }
