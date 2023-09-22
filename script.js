@@ -30,24 +30,29 @@ class Jos {
     this.frameNummer =  3;
     this.stapGrootte = null;
     this.gehaald = false;
+    this.aanDeBeurt= true;
   }
   
   beweeg() {
     if (keyIsDown(LEFT_ARROW)) {
       this.x -= this.stapGrootte;
       this.frameNummer = 2;
+      this.aanDeBeurt = false;
     }
     if (keyIsDown(RIGHT_ARROW)) {
       this.x += this.stapGrootte;
       this.frameNummer = 1;
+      this.aanDeBeurt = false;
     }
     if (keyIsDown(UP_ARROW)) {
       this.y -= this.stapGrootte;
       this.frameNummer = 4;
+      this.aanDeBeurt = false;
     }
     if (keyIsDown(DOWN_ARROW)) {
       this.y += this.stapGrootte;
       this.frameNummer = 5;
+      this.aanDeBeurt = false;
     }
     
     this.x = constrain(this.x,0,canvas.width);
@@ -149,4 +154,13 @@ function draw() {
     text("Je hebt gewonnen!",30,300);
     noLoop();
   }
+
+  if (eve.aanDeBeurt) {
+    eve.beweeg();
+ }
+else {
+    alice.beweeg();
+    bob.beweeg();
+    eve.aanDeBeurt = true;
+}
 }
