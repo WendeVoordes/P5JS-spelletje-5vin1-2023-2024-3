@@ -35,6 +35,33 @@ teken() {
     }
   }
 }
+class Bommen {
+  constructor() {
+    this.x = canvas.width / 2 + random(0, canvas.width / 2);
+    this.y = random(0, canvas.height - raster.celGrootte);
+    this.size = 25;
+    this.speed = random(3, 7);
+    this.direction = 1;
+    this.toBeRemoved = false; 
+  }
+
+  move() {
+    this.y += this.speed * this.direction;
+    if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
+      this.direction *= -1;
+    }
+  }
+
+  show() {
+    if (!this.toBeRemoved) {
+      fill('darkgrey');
+      ellipse(this.x, this.y, this.size);
+    }
+  }
+}
+
+let bommen = [];
+
 
 class Jos {
   constructor() {
@@ -71,6 +98,7 @@ class Jos {
       this.gehaald = true;
     }
   }
+
 
   
   wordtGeraakt(vijand) {
@@ -138,6 +166,10 @@ function setup() {
   bob = new Vijand(600,400);
   bob.stapGrootte = 1*eve.stapGrootte;
   bob.sprite = loadImage("images/sprites/Bob100px/Bob.png");  
+
+    for (let i = 0; i < 5; i++) {
+    bommen.push(new Bommen());
+  }
 }
 
 function draw() {
@@ -154,10 +186,22 @@ function draw() {
     noLoop();
   }
   
-  if (eve.gehaald) {
+if (eve.gehaald) {
+    for (let i = 0; i < bommen.length; i++) {
+      bommen[i].toBeRemoved = true;
+    }
+
     background('green');
     fill('white');
-    text("Je hebt gewonnen!",30,300);
+    text("Je hebt gewonnen!", 30, 300);
     noLoop();
+  }
+
+
+  bommen = bommen.filter((bom) => !bom.toBeRemoved);
+
+  for (let i = 0; i < bommen.length; i++) {
+    bommen[i].move();
+    bommen[i].show();
   }
 }
