@@ -104,7 +104,7 @@ function setup() {
   textFont("Verdana");
   textSize(90);
   
-  raster = new Raster(6,9);
+  raster = new Raster(12,18);
   
   raster.berekenCelGrootte();
   
