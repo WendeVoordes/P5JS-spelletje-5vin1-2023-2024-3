@@ -1,24 +1,38 @@
 class Raster {
-  constructor(r,k) {
+  constructor(r, k) {
     this.aantalRijen = r;
     this.aantalKolommen = k;
     this.celGrootte = null;
+    this.orangeRegel = -1; 
   }
-  
+
   berekenCelGrootte() {
     this.celGrootte = canvas.width / this.aantalKolommen;
   }
-  
-  teken() {
+
+teken() {
     push();
     noFill();
     stroke('grey');
-    for (var rij = 0;rij < this.aantalRijen;rij++) {
-      for (var kolom = 0;kolom < this.aantalKolommen;kolom++) {
-        rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
+    for (var rij = 0; rij < this.aantalRijen; rij++) {
+      if (rij === this.orangeRegel) {
+        fill('orange');
+      } else {
+        noFill();
       }
+      rect(0, rij * this.celGrootte, canvas.width, this.celGrootte);
+    }
+
+    for (var kolom = 0; kolom < this.aantalKolommen; kolom++) {
+      line(kolom * this.celGrootte, 0, kolom * this.celGrootte, canvas.height);
     }
     pop();
+  }
+
+  setOrangeRegel(regelIndex) {
+    if (regelIndex >= 0 && regelIndex < this.aantalRijen) {
+      this.orangeRegel = regelIndex;
+    }
   }
 }
 
@@ -33,19 +47,19 @@ class Jos {
   }
   
   beweeg() {
-    if (keyIsDown(LEFT_ARROW)) {
+    if (keyIsDown(65)) {
       this.x -= this.stapGrootte;
       this.frameNummer = 2;
     }
-    if (keyIsDown(RIGHT_ARROW)) {
+    if (keyIsDown(68)) {
       this.x += this.stapGrootte;
       this.frameNummer = 1;
     }
-    if (keyIsDown(UP_ARROW)) {
+    if (keyIsDown(87)) {
       this.y -= this.stapGrootte;
       this.frameNummer = 4;
     }
-    if (keyIsDown(DOWN_ARROW)) {
+    if (keyIsDown(83)) {
       this.y += this.stapGrootte;
       this.frameNummer = 5;
     }
@@ -57,6 +71,7 @@ class Jos {
       this.gehaald = true;
     }
   }
+
   
   wordtGeraakt(vijand) {
     if (this.x == vijand.x && this.y == vijand.y) {
@@ -107,6 +122,7 @@ function setup() {
   raster = new Raster(12,18);
   
   raster.berekenCelGrootte();
+  
   
   eve = new Jos();
   eve.stapGrootte = 1*raster.celGrootte;
