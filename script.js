@@ -3,44 +3,33 @@ class Raster {
     this.aantalRijen = r;
     this.aantalKolommen = k;
     this.celGrootte = null;
-    this.orangeRegel = -1; 
+    this.orangeRegel = r ; 
   }
 
   berekenCelGrootte() {
     this.celGrootte = canvas.width / this.aantalKolommen;
   }
 
+
 teken() {
     push();
     noFill();
     stroke('grey');
-    for (var rij = 0; rij < this.aantalRijen; rij++) {
-      if (rij === this.orangeRegel) {
-        fill('orange');
-      } else {
-        noFill();
+    for (var rij = 0;rij < this.aantalRijen;rij++) {
+      for (var kolom = 0;kolom < this.aantalKolommen;kolom++) {
+        rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
       }
-      rect(0, rij * this.celGrootte, canvas.width, this.celGrootte);
-    }
-
-    for (var kolom = 0; kolom < this.aantalKolommen; kolom++) {
-      line(kolom * this.celGrootte, 0, kolom * this.celGrootte, canvas.height);
     }
     pop();
-  }
-
-  setOrangeRegel(regelIndex) {
-    if (regelIndex >= 0 && regelIndex < this.aantalRijen) {
-      this.orangeRegel = regelIndex;
-    }
   }
 }
 class Bommen {
   constructor() {
     this.x = canvas.width / 2 + random(0, canvas.width / 2);
     this.y = random(0, canvas.height - raster.celGrootte);
-    this.size = 25;
+    this.size = 90;
     this.speed = random(3, 7);
+    this.image = bommenImage;
     this.direction = 1;
     this.toBeRemoved = false; 
   }
@@ -49,16 +38,25 @@ class Bommen {
     this.y += this.speed * this.direction;
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.direction *= -1;
-    }
-  }
+     }
+}
 
-  show() {
-    if (!this.toBeRemoved) {
-      fill('darkgrey');
-      ellipse(this.x, this.y, this.size);
+
+show() {
+  if (!this.toBeRemoved) {
+    image(this.image, this.x, this.y, this.size, this.size);
+  }
+}
+    wordtGeraakt(bommen){
+     if (this.x == bommen.x && this.y == bommen.y) {
+      return true;
+    }
+    else {
+      return false;
     }
   }
 }
+
 
 let bommen = [];
 
@@ -98,8 +96,6 @@ class Jos {
       this.gehaald = true;
     }
   }
-
-
   
   wordtGeraakt(vijand) {
     if (this.x == vijand.x && this.y == vijand.y) {
@@ -138,6 +134,7 @@ class Vijand {
 
 function preload() {
   brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
+  bommenImage = loadImage("images/sprites/bommen.png");
 }
 
 function setup() {
@@ -183,8 +180,24 @@ function draw() {
   bob.toon();
   
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob)) {
-    noLoop();
+        for (let i = 0; i < bommen.length; i++) {
+      bommen[i].toBeRemoved = true;
+    }
+     noLoop();
+    background('red');
+   textSize(90);
+    fill('white');
+    textAlign(CENTER, CENTER); 
+    text("Game Over", canvas.width / 2, canvas.height / 2);
+    textSize(20);
+    text("Druk op Enter om opnieuw te spelen", canvas.width / 2, canvas.height / 2 + 50);
+document.addEventListener('keydown', function(event) {
+  if (event.key === "Enter") {
+    location.reload();
   }
+});    
+  }
+
   
 if (eve.gehaald) {
     for (let i = 0; i < bommen.length; i++) {
@@ -195,6 +208,14 @@ if (eve.gehaald) {
     fill('white');
     text("Je hebt gewonnen!", 30, 300);
     noLoop();
+      textAlign(CENTER, CENTER); 
+      textSize(20);
+    text("Druk op Enter om opnieuw te spelen", canvas.width / 2, canvas.height / 2 + 50);
+document.addEventListener('keydown', function(event) {
+  if (event.key === "Enter") {
+    location.reload();
+  }
+});    
   }
 
 
