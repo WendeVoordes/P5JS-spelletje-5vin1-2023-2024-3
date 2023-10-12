@@ -12,35 +12,42 @@ class Raster {
 
 
 teken() {
-    push();
-    noFill();
-    stroke('grey');
-    for (var rij = 0;rij < this.aantalRijen;rij++) {
-      for (var kolom = 0;kolom < this.aantalKolommen;kolom++) {
-        rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
+  push();
+  noFill();
+  stroke('grey');
+  for (var rij = 0; rij < this.aantalRijen; rij++) {
+    for (var kolom = 0; kolom < this.aantalKolommen; kolom++) {
+      if (rij === this.orangeRegel - 1 || kolom === this.orangeRegel + 5) {
+        fill('orange');
+      } else {
+        noFill();
       }
+      rect(kolom * this.celGrootte, rij * this.celGrootte, this.celGrootte, this.celGrootte);
     }
-    pop();
   }
+  pop();
 }
+}
+
 class Bommen {
   constructor() {
-    this.x = canvas.width / 2 + random(0, canvas.width / 2);
-    this.y = random(0, canvas.height - raster.celGrootte);
     this.size = 90;
     this.speed = random(3, 7);
     this.image = bommenImage;
     this.direction = 1;
     this.toBeRemoved = false; 
-  }
+    this.x = constrain(canvas.width / 2 + random(0, canvas.width / 2), 0, canvas.width - this.size);
+    this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
+    }
+  
 
   move() {
     this.y += this.speed * this.direction;
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.direction *= -1;
+
      }
 }
-
 
 show() {
   if (!this.toBeRemoved) {
@@ -111,6 +118,7 @@ class Jos {
   }
 }  
 
+
 class Vijand {
   constructor(x,y) {
     this.x = x;
@@ -135,7 +143,37 @@ class Vijand {
 function preload() {
   brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
   bommenImage = loadImage("images/sprites/bommen.png");
+  appelImage = loadImage("images/sprites/appel_1.png");
 }
+
+class Appel {
+  constructor() {
+    this.image = appelImage; 
+    this.spawnRandomPosition(); 
+    this.x = randomCol * raster.celGrootte;
+    this.y = randomRow * raster.celGrootte;
+    this.toon(); 
+  }
+
+
+  spawnRandomPosition() {
+
+    randomCol = Math.floor(Math.random() * numberOfCols);
+    randomRow = Math.floor(Math.random() * numberOfRows);
+  }
+
+  draw() {
+    image(this.image, this.x, this.y, raster.celGrootte, raster.celGrootte);
+  }
+
+  toon() {
+
+  }
+}
+
+
+
+
 
 function setup() {
   canvas = createCanvas(900,600);
@@ -179,7 +217,7 @@ function draw() {
   alice.toon();
   bob.toon();
   
-  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob)) {
+  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(bommen)) {
         for (let i = 0; i < bommen.length; i++) {
       bommen[i].toBeRemoved = true;
     }
