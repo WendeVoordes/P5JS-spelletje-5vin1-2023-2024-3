@@ -1,3 +1,6 @@
+let playerLives = 2;
+let usedColumns = [];
+
 class Raster {
   constructor(r, k) {
     this.aantalRijen = r;
@@ -24,10 +27,11 @@ teken() {
       }
       rect(kolom * this.celGrootte, rij * this.celGrootte, this.celGrootte, this.celGrootte);
     }
-  }
+    }
   pop();
+  }
 }
-}
+
 
 class Bommen {
   constructor() {
@@ -36,37 +40,70 @@ class Bommen {
     this.image = bommenImage;
     this.direction = 1;
     this.toBeRemoved = false; 
-    this.x = constrain(canvas.width / 2 + random(0, canvas.width / 2), 0, canvas.width - this.size);
-    this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
-    }
+
+      let randomColumn;
+      do {
+        randomColumn = floor(random(raster.aantalKolommen / 2, raster.aantalKolommen));
+      } while (usedColumns.includes(randomColumn));
+
   
+      this.column = randomColumn;
+      usedColumns.push(randomColumn);
+
+     
+      let columnCenterX = this.column * raster.celGrootte + raster.celGrootte / 2;
+
+      
+      this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
+
+      // Set the X-coordinate to the center of the selected column
+      this.x = constrain(random(columnCenterX - raster.celGrootte / 2, columnCenterX + raster.celGrootte / 2), 0, canvas.width - this.size);
+    }
 
   move() {
     this.y += this.speed * this.direction;
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.direction *= -1;
-
-     }
-}
-
-show() {
-  if (!this.toBeRemoved) {
-    image(this.image, this.x, this.y, this.size, this.size);
+    }
   }
-}
+
+  show() {
+    if (!this.toBeRemoved) {
+      image(this.image, this.x, this.y, this.size, this.size);
+    }
+  }
+  
+
     wordtGeraakt(bommen){
      if (this.x == bommen.x && this.y == bommen.y) {
       return true;
     }
     else {
       return false;
+      }
     }
   }
-}
-
 
 let bommen = [];
 
+class Apple {
+  constructor() {
+    this.size = raster.celGrootte;
+    this.spawnRandomly();
+    this.image = appleImage;
+  }
+
+  spawnRandomly() {
+    // Generate random coordinates for the apple within the grid
+    this.x = floor(random(raster.aantalKolommen)) * this.size;
+    this.y = floor(random(raster.aantalRijen)) * this.size;
+  }
+
+  show() {
+    // Display the apple on the canvas
+    image(appleImage, this.x, this.y, this.size, this.size);
+  }
+}
 
 class Jos {
   constructor() {
@@ -104,20 +141,21 @@ class Jos {
     }
   }
   
-  wordtGeraakt(vijand) {
-    if (this.x == vijand.x && this.y == vijand.y) {
-      return true;
+    wordtGeraakt(vijand) {
+      if (this.x == vijand.x && this.y == vijand.y) {
+        return true;
+      }
+      else {
+        return false;
+      }
     }
-    else {
-      return false;
-    }
-  }
+  
   
   toon() {
     image(this.animatie[this.frameNummer],this.x,this.y,raster.celGrootte,raster.celGrootte);
-  }
-}  
-
+  }  
+}
+  
 
 class Vijand {
   constructor(x,y) {
@@ -143,36 +181,8 @@ class Vijand {
 function preload() {
   brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
   bommenImage = loadImage("images/sprites/bommen.png");
-  appelImage = loadImage("images/sprites/appel_1.png");
+  appleImage = loadImage("images/sprites/goldenApple.png");
 }
-
-class Appel {
-  constructor() {
-    this.image = appelImage; 
-    this.spawnRandomPosition(); 
-    this.x = randomCol * raster.celGrootte;
-    this.y = randomRow * raster.celGrootte;
-    this.toon(); 
-  }
-
-
-  spawnRandomPosition() {
-
-    randomCol = Math.floor(Math.random() * numberOfCols);
-    randomRow = Math.floor(Math.random() * numberOfRows);
-  }
-
-  draw() {
-    image(this.image, this.x, this.y, raster.celGrootte, raster.celGrootte);
-  }
-
-  toon() {
-
-  }
-}
-
-
-
 
 
 function setup() {
@@ -204,11 +214,21 @@ function setup() {
 
     for (let i = 0; i < 5; i++) {
     bommen.push(new Bommen());
-  }
+    }
+   apple = new Apple();
+    }
+  
+
+function displayLives() {
+  fill('orange');
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text(`Lives: ${playerLives}`, 10, 10); 
 }
 
 function draw() {
   background(brug);
+  displayLives();
   raster.teken();
   eve.beweeg();
   alice.beweeg();
@@ -216,10 +236,24 @@ function draw() {
   eve.toon();
   alice.toon();
   bob.toon();
+  apple.show();
+
+  if (eve.wordtGeraakt(apple)) {
+    playerLives++; // Increase the player's lives
+    // Respawn the apple in a new random location
+    apple.spawnRandomly();
+  }
   
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(bommen)) {
-        for (let i = 0; i < bommen.length; i++) {
-      bommen[i].toBeRemoved = true;
+    playerLives --;}
+
+  if (playerLives <= 0) {
+    
+    for (let i = 0; i < bommen.length; i++) {
+      if (eve.wordtGeraakt(bommen[i])) {
+        playerLives--; // Decrease the player's lives
+        bommen[i].toBeRemoved = true; // Remove the bomb that was touched
+      }
     }
      noLoop();
     background('red');
@@ -241,12 +275,13 @@ if (eve.gehaald) {
     for (let i = 0; i < bommen.length; i++) {
       bommen[i].toBeRemoved = true;
     }
-
+     noLoop();
     background('green');
+     textSize(90);
+       fill('white');
+    textAlign(CENTER, CENTER); 
+    text("Je hebt gewonnen!", canvas.width / 2, canvas.height / 2);
     fill('white');
-    text("Je hebt gewonnen!", 30, 300);
-    noLoop();
-      textAlign(CENTER, CENTER); 
       textSize(20);
     text("Druk op Enter om opnieuw te spelen", canvas.width / 2, canvas.height / 2 + 50);
 document.addEventListener('keydown', function(event) {
