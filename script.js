@@ -1,5 +1,4 @@
 let playerLives = 2;
-let usedColumns = [];
 
 class Raster {
   constructor(r, k) {
@@ -35,54 +34,38 @@ teken() {
 
 class Bommen {
   constructor() {
-    this.size = 90;
+    this.size = 55;
     this.speed = random(3, 7);
-    this.image = bommenImage;
+    this.image = creeperImage;
     this.direction = 1;
     this.toBeRemoved = false; 
-
-      let randomColumn;
-      do {
-        randomColumn = floor(random(raster.aantalKolommen / 2, raster.aantalKolommen));
-      } while (usedColumns.includes(randomColumn));
-
-  
-      this.column = randomColumn;
-      usedColumns.push(randomColumn);
-
-     
-      let columnCenterX = this.column * raster.celGrootte + raster.celGrootte / 2;
-
-      
-      this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
-
-      // Set the X-coordinate to the center of the selected column
-      this.x = constrain(random(columnCenterX - raster.celGrootte / 2, columnCenterX + raster.celGrootte / 2), 0, canvas.width - this.size);
+    this.x = constrain(random(canvas.width / 2, canvas.width - this.size), 0, canvas.width - this.size);
+    this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
     }
 
-  move() {
+
+  beweeg() {
     this.y += this.speed * this.direction;
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.direction *= -1;
-    }
-  }
 
-  show() {
-    if (!this.toBeRemoved) {
-      image(this.image, this.x, this.y, this.size, this.size);
-    }
-  }
-  
+     }
+}
 
+toon() {
+  if (!this.toBeRemoved) {
+    image(this.image, this.x, this.y, this.size, this.size);
+  }
+}
     wordtGeraakt(bommen){
      if (this.x == bommen.x && this.y == bommen.y) {
       return true;
     }
     else {
       return false;
-      }
     }
   }
+}
 
 let bommen = [];
 
@@ -94,13 +77,11 @@ class Apple {
   }
 
   spawnRandomly() {
-    // Generate random coordinates for the apple within the grid
     this.x = floor(random(raster.aantalKolommen)) * this.size;
     this.y = floor(random(raster.aantalRijen)) * this.size;
   }
 
-  show() {
-    // Display the apple on the canvas
+  toon() {
     image(appleImage, this.x, this.y, this.size, this.size);
   }
 }
@@ -179,8 +160,8 @@ class Vijand {
 }
 
 function preload() {
-  brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
-  bommenImage = loadImage("images/sprites/bommen.png");
+  minecraft = loadImage("achtergrond.png");
+  creeperImage = loadImage("creeper.png");
   appleImage = loadImage("images/sprites/goldenApple.png");
 }
 
@@ -206,11 +187,11 @@ function setup() {
   
   alice = new Vijand(700,200);
   alice.stapGrootte = 1*eve.stapGrootte;
-  alice.sprite = loadImage("images/sprites/Alice100px/Alice.png");
+  alice.sprite = loadImage("zombie.png");
 
   bob = new Vijand(600,400);
   bob.stapGrootte = 1*eve.stapGrootte;
-  bob.sprite = loadImage("images/sprites/Bob100px/Bob.png");  
+  bob.sprite = loadImage("Skeleton.jpg");  
 
     for (let i = 0; i < 5; i++) {
     bommen.push(new Bommen());
@@ -223,11 +204,11 @@ function displayLives() {
   fill('orange');
   textSize(24);
   textAlign(LEFT, TOP);
-  text(`Lives: ${playerLives}`, 10, 10); 
+  text(`Levens: ${playerLives}`, 10, 10); 
 }
 
 function draw() {
-  background(brug);
+  background(minecraft);
   displayLives();
   raster.teken();
   eve.beweeg();
@@ -236,7 +217,7 @@ function draw() {
   eve.toon();
   alice.toon();
   bob.toon();
-  apple.show();
+  apple.toon();
 
   if (eve.wordtGeraakt(apple)) {
     playerLives++; // Increase the player's lives
@@ -247,14 +228,18 @@ function draw() {
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(bommen)) {
     playerLives --;}
 
+  for (let i = 0; i < bommen.length; i++) {
+    if (eve.wordtGeraakt(bommen[i])) {
+      playerLives--; // Decrease the player's lives
+    }
+  }
+
   if (playerLives <= 0) {
     
     for (let i = 0; i < bommen.length; i++) {
-      if (eve.wordtGeraakt(bommen[i])) {
-        playerLives--; // Decrease the player's lives
         bommen[i].toBeRemoved = true; // Remove the bomb that was touched
       }
-    }
+  
      noLoop();
     background('red');
    textSize(90);
