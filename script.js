@@ -37,7 +37,7 @@ class Raster {
 class Bommen {
   constructor() {
     this.size = raster.celGrootte; // Grootte van de bom is gelijk aan de groote van een cel
-    this.speed = random(7, 15); // Snelheid van de bom
+    this.speed = random(15, 40); // Snelheid van de bom
     this.image = creeperImage; // Afbeelding van de bom
     this.direction = 1;
     this.toBeRemoved = false; // een 'flag' om aan te geven of de bom moet worden verwijderd
@@ -53,10 +53,10 @@ class Bommen {
     }
 
 
-  // Beweeg de bom op en neer
-  beweeg() {
-    this.y += this.speed * this.direction;
-    if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
+    // Beweeg de bom op en neer
+      beweeg() {
+      this.y += this.speed * this.direction;
+      if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
       this.direction *= -1;
     }
   }
@@ -189,8 +189,8 @@ wordtGeraakt(object) {
     const currentTime = millis();
     const timeDifference = currentTime - this.lastHitTime;
 
-    // Als het tijdverschil groter is dan 3 seconde 
-    if (timeDifference > 3000) {
+    // Als het tijdverschil groter is dan 0.5 seconde verliest de speler pas een leven
+    if (timeDifference > 500) {
       if (object instanceof Bommen || object instanceof Vijand) {
         // Check contact vijand of bom
         const playerLeft = this.x;
@@ -246,6 +246,7 @@ class Vijand {
     image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
 }
+
 //definieer heartImages
 let heartImages = [];
 
