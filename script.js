@@ -6,6 +6,7 @@ class Raster {
     this.aantalRijen = r; // Aantal rijen
     this.aantalKolommen = k; // Aantal kolommen
     this.celGrootte = null; // Celgrootte
+    this.groeneRegel = r;
   }
 
   // Bereken de celgrootte op basis van de canvasbreedte en het aantal kolommen
@@ -20,8 +21,8 @@ class Raster {
     stroke('grey');
     for (var rij = 0; rij < this.aantalRijen; rij++) {
       for (var kolom = 0; kolom < this.aantalKolommen; kolom++) {
-        if (rij === this.orangeRegel - 1 || kolom === this.orangeRegel + 5) {
-          fill('orange');
+        if (rij === this.groeneRegel - 1 || kolom === this.groeneRegel + 5) {
+          fill('green');
         } else {
           noFill();
         }
@@ -35,14 +36,22 @@ class Raster {
 // Definieer de Bommen-klasse
 class Bommen {
   constructor() {
-    this.size = 55 // Grootte van de bom is gelijk aan de groote van een cel
-    this.speed = random(3, 7); // Snelheid van de bom
+    this.size = raster.celGrootte; // Grootte van de bom is gelijk aan de groote van een cel
+    this.speed = random(7, 15); // Snelheid van de bom
     this.image = creeperImage; // Afbeelding van de bom
     this.direction = 1;
     this.toBeRemoved = false; // een 'flag' om aan te geven of de bom moet worden verwijderd
-    this.x = constrain(random(canvas.width / 2, canvas.width - this.size), 0, canvas.width - this.size);
+
+    // Calculate the center of a random column on the right side of the canvas
+    const rightHalfColumns = floor(raster.aantalKolommen / 2);
+    const columnCenter = floor(random(rightHalfColumns, raster.aantalKolommen)) * raster.celGrootte;
+
+    // Set the x-coordinate to the center of the column
+    this.x = columnCenter;
+
     this.y = constrain(random(0, canvas.height - raster.celGrootte), 0, canvas.height - this.size);
-  }
+    }
+
 
   // Beweeg de bom op en neer
   beweeg() {
@@ -61,9 +70,10 @@ class Bommen {
 
   // Controleer of de bom is geraakt door een andere bom
   wordtGeraakt(bommen) {
-    return this.x === bommen.x && this.y === bommen.y;
+    return this.x === bommen[i].x && this.y === bom.bommen.y;
   }
 }
+
 
 // Een array om bommen op te slaan
 let bommen = [];
@@ -94,6 +104,7 @@ class Jos {
     this.x = 400;
     this.y = 300;
     this.animatie = [];
+     this.lastHitTime = 0; // Tijd waarop de speler de laatste keer is geraakt
     this.frameNummer = 3; // frame voor animatie
     this.stapGrootte = null; // Stapgrootte voor beweging
     this.gehaald = false; // Een 'flag' om aan te geven of de speler het einde heeft bereikt
@@ -118,12 +129,20 @@ class Jos {
       this.frameNummer = 5;
     }
     // Controleer of Jos wordt geraakt door een vijand of een bom
-    if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(bommen)) {
+    if (this.wordtGeraakt(alice) || this.wordtGeraakt(bob)){ 
       playerLives--;
-      console.log("Player hit by enemy or bomb. Lives: " + playerLives);
+      console.log("Player hit by enemy. Lives: " + playerLives);
     }
 
-    // Beperk de positie van de speler binnen de canvasgrenzen
+    for (let i = 0; i < bommen.length; i++) {
+       if (this.wordtGeraakt(bommen[i])) {
+         playerLives--;
+         console.log("Player hit by bomb. Lives: " + playerLives)
+        }
+      }
+    
+    
+  // Beperk de positie van de speler binnen de canvasgrenzen
     this.x = constrain(this.x, 0, canvas.width);
     this.y = constrain(this.y, 0, canvas.height - raster.celGrootte);
 
@@ -142,14 +161,73 @@ class Jos {
   toon() {
     image(this.animatie[this.frameNummer], this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
+
+//code die zorgt voor een cooldown voor het aantal levens dat de speler binnen 3 sec kan verliezen
+wordtGeraakt(object) {
+  if (object instanceof Apple) {
+    // Check contact met appels
+    const playerLeft = this.x;
+    const playerRight = this.x + raster.celGrootte;
+    const playerTop = this.y;
+    const playerBottom = this.y + raster.celGrootte;
+
+    const objectLeft = object.x;
+    const objectRight = object.x + object.size;
+    const objectTop = object.y;
+    const objectBottom = object.y + object.size;
+
+    if (
+      playerLeft < objectRight &&
+      playerRight > objectLeft &&
+      playerTop < objectBottom &&
+      playerBottom > objectTop
+    ) {
+      return true; // Botsing gevonden met appel
+    }
+  } else {
+    // Check de laatste keer botsing met een bom of vijand
+    const currentTime = millis();
+    const timeDifference = currentTime - this.lastHitTime;
+
+    // Als het tijdverschil groter is dan 3 seconde 
+    if (timeDifference > 3000) {
+      if (object instanceof Bommen || object instanceof Vijand) {
+        // Check contact vijand of bom
+        const playerLeft = this.x;
+        const playerRight = this.x + raster.celGrootte;
+        const playerTop = this.y;
+        const playerBottom = this.y + raster.celGrootte;
+
+        const objectLeft = object.x;
+        const objectRight = object.x + object.size;
+        const objectTop = object.y;
+        const objectBottom = object.y + object.size;
+
+        if (
+          playerLeft < objectRight &&
+          playerRight > objectLeft &&
+          playerTop < objectBottom &&
+          playerBottom > objectTop
+        ) {
+          // update de laatste keer botsing
+          this.lastHitTime = millis();
+          return true; // Controleer of jos in contact komt met vijand of bom
+        }
+      }
+    }
+  }
+
+  return false; // als er geen contact is of contact is tijdens de cooldown
+  }
 }
+
 
 // Definieer de Vijand-klasse
 class Vijand {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.sprite = null; // Afbeelding van de vijand
+    this.sprite = null; 
     this.stapGrootte = null; // Stapgrootte voor beweging van de vijand
   }
 
@@ -190,15 +268,15 @@ function setup() {
   textFont("Verdana");
   textSize(90);
 
-  // Maak het grid
+  // Maak het raster
   raster = new Raster(12, 18);
   raster.berekenCelGrootte();
 
-  // de spel
+  // Jos( de speler) heet nu eve
   eve = new Jos();
   eve.stapGrootte = 1 * raster.celGrootte;
 
-  // Laad de animatieframes van Jos
+  // Laad de animatieframes van eve
   for (var b = 0; b < 6; b++) {
     frameEve = loadImage("images/sprites/Eve100px/Eve_" + b + ".png");
     eve.animatie.push(frameEve);
@@ -230,7 +308,7 @@ function displayLives() {
   let heartSpacing = 0.5; // de ruimte tussen de hartjes
   
   for (let i = 1; i <= maxLives; i++) {
-    // Only display hearts up to the maximum number of lives
+    // Laat alleen harten zien tot dat het maximum is bereikt
     if (i <= playerLives) {
       image(heartImages[i], i * (heartSize + heartSpacing), 10, heartSize, heartSize);
     }
@@ -252,6 +330,7 @@ function draw() {
   bob.toon();
   apple.toon();
 
+ 
   // Controleer of Jos wordt geraakt door een van de bommen
   for (let i = 0; i < bommen.length; i++) {
     if (eve.wordtGeraakt(bommen[i])) {
@@ -271,20 +350,29 @@ function draw() {
     playerLives++;
     apple.spawnRandomly();
   }
-
-  // Controleer of Jos wordt geraakt door een vijand of een bom
-  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(bommen)) {
-    playerLives--;
-    //zorgt ervoor dat de speler max 10 levens kan hebben
-    playerLives = constrain(playerLives, 0, 10);
-  }
-
+  
   // Controleer of Jos wordt geraakt door een van de bommen
   for (let i = 0; i < bommen.length; i++) {
     if (eve.wordtGeraakt(bommen[i])) {
       playerLives--;
+      console.log("Player hit by bomb. Lives: " + playerLives);
     }
   }
+  
+  // Controleer of Jos wordt geraakt door een vijand of een bom
+  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob)) {
+    playerLives--;
+    //zorgt ervoor dat de speler max 10 levens kan hebben
+    playerLives = constrain(playerLives, 0, 10);
+  }
+  
+  for (let i = 0; i < bommen.length; i++) {
+     if (eve.wordtGeraakt(bommen[i])) {
+       playerLives--;
+       console.log("Player hit by bomb. Lives: " + playerLives)
+     }
+      }
+  
 
   // Voorwaarde voor het verliezen van het spel
   if (playerLives <= 0) {
